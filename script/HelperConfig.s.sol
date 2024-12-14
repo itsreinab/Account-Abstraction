@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
@@ -7,23 +6,23 @@ import {EntryPoint} from "lib/account-abstraction/contracts/core/EntryPoint.sol"
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract HelperConfig is Script {
-     /////////////////////
+    /////////////////////
     //     ERRORS      //
-   /////////////////////
+    /////////////////////
     error HelperConfig__InvalidChainId();
 
-     ///////////////////
+    ///////////////////
     //     TYPES     //
-   ///////////////////
+    ///////////////////
     struct NetworkConfig {
         address entryPoint;
         address usdc;
         address account;
     }
 
-   /////////////////////////
-  //    STATE VARIABLES  //
- /////////////////////////
+    /////////////////////////
+    //    STATE VARIABLES  //
+    /////////////////////////
     uint256 constant ETH_MAINNET_CHAIN_ID = 1;
     uint256 constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 constant ZKSYNC_SEPOLIA_CHAIN_ID = 300;
@@ -39,8 +38,8 @@ contract HelperConfig is Script {
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
 
     /////////////////////
-   //    FUNCTIONS    //
-  /////////////////////
+    //    FUNCTIONS    //
+    /////////////////////
     constructor() {
         networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getEthSepoliaConfig();
         networkConfigs[ETH_MAINNET_CHAIN_ID] = getEthMainnetConfig();
@@ -62,9 +61,9 @@ contract HelperConfig is Script {
         }
     }
 
-     /////////////////////
+    /////////////////////
     //    CONFIGS      //
-   /////////////////////
+    /////////////////////
     function getEthMainnetConfig() public pure returns (NetworkConfig memory) {
         // This is v7
         return NetworkConfig({
@@ -72,7 +71,6 @@ contract HelperConfig is Script {
             usdc: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
             account: BURNER_WALLET
         });
-        
     }
 
     function getEthSepoliaConfig() public pure returns (NetworkConfig memory) {

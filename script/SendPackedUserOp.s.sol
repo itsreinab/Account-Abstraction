@@ -78,9 +78,9 @@ contract SendPackedUserOp is Script {
             nonce: nonce,
             initCode: hex"",
             callData: callData,
-            accountGasLimits: bytes32(uint256(verificationGasLimit) << 128 | callGasLimit),
+            accountGasLimits: bytes32((uint256(verificationGasLimit) << 128) | callGasLimit),
             preVerificationGas: verificationGasLimit,
-            gasFees: bytes32(uint256(maxPriorityFeePerGas) << 128 | maxFeePerGas),
+            gasFees: bytes32((uint256(maxPriorityFeePerGas) << 128) | maxFeePerGas),
             paymasterAndData: hex"",
             signature: hex""
         });

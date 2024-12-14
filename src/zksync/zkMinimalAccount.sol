@@ -2,10 +2,21 @@
 pragma solidity 0.8.24;
 
 // Zk Sync Era Imports
-import {IAccount, ACCOUNT_VALIDATION_SUCCESS_MAGIC} from "lib/foundry-era-contracts/src/system-contracts/contracts/interfaces/IAccount.sol";
-import {Transaction, MemoryTransactionHelper} from "lib/foundry-era-contracts/src/system-contracts/contracts/libraries/MemoryTransactionHelper.sol";
-import {SystemContractsCaller} from "lib/foundry-era-contracts/src/system-contracts/contracts/libraries/SystemContractHelper.sol";
-import {NONCE_HOLDER_SYSTEM_CONTRACT, BOOTLOADER_FORMAL_ADDRESS, DEPLOYER_SYSTEM_CONTRACT} from "lib/foundry-era-contracts/src/system-contracts/contracts/Constants.sol";
+import {
+    IAccount,
+    ACCOUNT_VALIDATION_SUCCESS_MAGIC
+} from "lib/foundry-era-contracts/src/system-contracts/contracts/interfaces/IAccount.sol";
+import {
+    Transaction,
+    MemoryTransactionHelper
+} from "lib/foundry-era-contracts/src/system-contracts/contracts/libraries/MemoryTransactionHelper.sol";
+import {SystemContractsCaller} from
+    "lib/foundry-era-contracts/src/system-contracts/contracts/libraries/SystemContractHelper.sol";
+import {
+    NONCE_HOLDER_SYSTEM_CONTRACT,
+    BOOTLOADER_FORMAL_ADDRESS,
+    DEPLOYER_SYSTEM_CONTRACT
+} from "lib/foundry-era-contracts/src/system-contracts/contracts/Constants.sol";
 import {INonceHolder} from "lib/foundry-era-contracts/src/system-contracts/contracts/interfaces/INonceHolder.sol";
 import {Utils} from "lib/foundry-era-contracts/src/system-contracts/contracts/libraries/Utils.sol";
 
@@ -53,6 +64,7 @@ contract ZkMinimalAccount is IAccount, Ownable {
         }
         _;
     }
+
     modifier requireFromBootLoaderOrOwner() {
         if (msg.sender != BOOTLOADER_FORMAL_ADDRESS && msg.sender != owner()) {
             revert ZkMinimalAccount__NotFromBootLoaderOrOwner();
@@ -74,16 +86,16 @@ contract ZkMinimalAccount is IAccount, Ownable {
      * @notice we will also check to see if we have enough money in our account
      */
     function validateTransaction(
-        bytes32 /*_txHash*/,
-        bytes32 /*_suggestedSignedHash*/,
+        bytes32, /*_txHash*/
+        bytes32, /*_suggestedSignedHash*/
         Transaction calldata _transaction
     ) external payable requireFromBootLoader returns (bytes4 magic) {
         return _validateTransaction(_transaction);
     }
 
     function executeTransaction(
-        bytes32 /*_txHash*/,
-        bytes32 /*_suggestedSignedHash*/,
+        bytes32, /*_txHash*/
+        bytes32, /*_suggestedSignedHash*/
         Transaction calldata _transaction
     ) external payable requireFromBootLoaderOrOwner {
         return _executeTransaction(_transaction);
@@ -91,40 +103,34 @@ contract ZkMinimalAccount is IAccount, Ownable {
 
     // There is no point in providing possible signed hash in the `executeTransactionFromOutside` method,
     // since it typically should not be trusted.
-    function executeTransactionFromOutside(
-        Transaction calldata _transaction
-    ) external payable {
-        bytes4 magic =_validateTransaction(_transaction);
-        if(magic != ACCOUNT_VALIDATION_SUCCESS_MAGIC){
+    function executeTransactionFromOutside(Transaction calldata _transaction) external payable {
+        bytes4 magic = _validateTransaction(_transaction);
+        if (magic != ACCOUNT_VALIDATION_SUCCESS_MAGIC) {
             revert ZkMinimalAccount__InvalidSignature();
         }
         _executeTransaction(_transaction);
     }
 
-    function payForTransaction(
-        bytes32 /*_txHash*/,
-        bytes32 /*_suggestedSignedHash*/,
-        Transaction calldata _transaction
-    ) external payable {
+    function payForTransaction(bytes32, /*_txHash*/ bytes32, /*_suggestedSignedHash*/ Transaction calldata _transaction)
+        external
+        payable
+    {
         bool success = _transaction.payToTheBootloader();
         if (!success) {
             revert ZkMinimalAccount__FailedToPay();
         }
     }
 
-    function prepareForPaymaster(
-        bytes32 _txHash,
-        bytes32 _possibleSignedHash,
-        Transaction calldata _transaction
-    ) external payable {}
+    function prepareForPaymaster(bytes32 _txHash, bytes32 _possibleSignedHash, Transaction calldata _transaction)
+        external
+        payable
+    {}
 
     ///////////////////////
     // INTERNAL FUNCTIONS//
     ///////////////////////
 
-    function _validateTransaction(
-        Transaction memory _transaction
-    ) internal returns (bytes4 magic) {
+    function _validateTransaction(Transaction memory _transaction) internal returns (bytes4 magic) {
         // call nonceholder
         // increment nonce
         // call x, y, z -> system contract call
@@ -132,10 +138,7 @@ contract ZkMinimalAccount is IAccount, Ownable {
             uint32(gasleft()),
             address(NONCE_HOLDER_SYSTEM_CONTRACT),
             0,
-            abi.encodeCall(
-                INonceHolder.incrementMinNonceIfEquals,
-                (_transaction.nonce)
-            )
+            abi.encodeCall(INonceHolder.incrementMinNonceIfEquals, (_transaction.nonce))
         );
 
         // Check for fee to pay
@@ -163,24 +166,11 @@ contract ZkMinimalAccount is IAccount, Ownable {
         bytes memory data = _transaction.data;
         if (to == address(DEPLOYER_SYSTEM_CONTRACT)) {
             uint32 gas = Utils.safeCastToU32(gasleft());
-            SystemContractsCaller.systemCallWithPropagatedRevert(
-                gas,
-                to,
-                value,
-                data
-            );
+            SystemContractsCaller.systemCallWithPropagatedRevert(gas, to, value, data);
         } else {
             bool success;
             assembly {
-                success := call(
-                    gas(),
-                    to,
-                    value,
-                    add(data, 0x20),
-                    mload(data),
-                    0,
-                    0
-                )
+                success := call(gas(), to, value, add(data, 0x20), mload(data), 0, 0)
             }
             if (!success) {
                 revert ZkMinimalAccount__ExecutionFailed();

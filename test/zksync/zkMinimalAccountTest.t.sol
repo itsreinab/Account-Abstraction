@@ -36,7 +36,6 @@ contract ZkMinimalAccountTest is Test, ZkSyncChainChecker {
         minimalAccount.transferOwnership(ANVIL_DEFAULT_ACCOUNT);
         usdc = new ERC20Mock();
         vm.deal(address(minimalAccount), AMOUNT);
-
     }
 
     function testZkOwnerCanExecuteCommands() public {
