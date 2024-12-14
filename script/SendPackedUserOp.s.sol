@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Script} from "lib/forge-std/src/Script.sol";
+import {Script, console2} from "forge-std/Script.sol";
 import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
@@ -16,10 +16,10 @@ contract SendPackedUserOp is Script {
     // Make sure you trust this user - don't run this on Mainnet!
     address constant RANDOM_APPROVER = 0x9EA9b0cc1919def1A3CfAEF4F7A66eE3c36F86fC;
 
-    function run() public{
-      // Setup for Arbitrum
+    function run() public {
+        // Setup
         HelperConfig helperConfig = new HelperConfig();
-        address dest; // arbitrum mainnet USDC address
+        address dest = helperConfig.getConfig().usdc; // arbitrum mainnet USDC address
         uint256 value = 0;
         address minimalAccountAddress = DevOpsTools.get_most_recent_deployment("MinimalAccount", block.chainid);
 
@@ -37,7 +37,7 @@ contract SendPackedUserOp is Script {
         vm.stopBroadcast();
     }
 
-      function generateSignedUserOperation(
+    function generateSignedUserOperation(
         bytes memory callData,
         HelperConfig.NetworkConfig memory config,
         address minimalAccount
@@ -64,7 +64,11 @@ contract SendPackedUserOp is Script {
         return userOp;
     }
 
-    function _generateUnsignedUserOperation(bytes memory callData, address sender, uint256 nonce) internal pure returns(PackedUserOperation memory){
+    function _generateUnsignedUserOperation(bytes memory callData, address sender, uint256 nonce)
+        internal
+        pure
+        returns (PackedUserOperation memory)
+    {
         uint128 verificationGasLimit = 16777216;
         uint128 callGasLimit = verificationGasLimit;
         uint128 maxPriorityFeePerGas = 256;
